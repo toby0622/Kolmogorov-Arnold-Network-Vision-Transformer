@@ -162,4 +162,7 @@ cython_debug/
 #.idea/
 
 # training data
-ViT/Data
+ViT/data
+ViT/weights
+ViT_KAN/data
+ViT_KAN/weights
