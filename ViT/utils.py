@@ -17,10 +17,10 @@ def read_split_data(root: str, val_rate: float = 0.2):
         cla for cla in os.listdir(root) if os.path.isdir(os.path.join(root, cla))
     ]
 
-    # 排序，保證各平台顺序一致
+    # 排序，保證各平台順序一致
     flower_class.sort()
 
-    # 生成類別名稱與對應的數字索引
+    # 生成類別名稱與對應的索引
     class_indices = dict((k, v) for v, k in enumerate(flower_class))
     json_str = json.dumps(
         dict((val, key) for key, val in class_indices.items()), indent=4
@@ -29,35 +29,43 @@ def read_split_data(root: str, val_rate: float = 0.2):
     with open("class_indices.json", "w") as json_file:
         json_file.write(json_str)
 
-    train_images_path = []  # 存储训练集的所有图片路径
-    train_images_label = []  # 存储训练集图片对应索引信息
-    val_images_path = []  # 存储验证集的所有图片路径
-    val_images_label = []  # 存储验证集图片对应索引信息
-    every_class_num = []  # 存储每个类别的样本总数
-    supported = [".jpg", ".JPG", ".png", ".PNG"]  # 支持的文件后缀类型
-    # 遍历每个文件夹下的文件
+    train_images_path = []  # 儲存訓練集的所有圖片路徑
+    train_images_label = []  # 儲存訓練集圖片對應索引
+    val_images_path = []  # 儲存驗證集的所有圖片路徑
+    val_images_label = []  # 儲存驗證集圖片對應索引
+    every_class_num = []  # 儲存每個類別的樣本數
+    supported = [".jpg", ".JPG", ".png", ".PNG"]  # 支持的圖片格式
+    
+    # 遍歷每個 Folder 的 File
     for cla in flower_class:
         cla_path = os.path.join(root, cla)
-        # 遍历获取supported支持的所有文件路径
+
+        # 遍歷獲取 supported 支持的所有文件路徑
         images = [
             os.path.join(root, cla, i)
             for i in os.listdir(cla_path)
             if os.path.splitext(i)[-1] in supported
         ]
-        # 排序，保证各平台顺序一致
+
+        # 排序，保證各平台順序一致
         images.sort()
-        # 获取该类别对应的索引
+
+        # 獲取該類別對應的索引
         image_class = class_indices[cla]
-        # 记录该类别的样本数量
+
+        # 紀錄該類別的樣本數
         every_class_num.append(len(images))
-        # 按比例随机采样验证样本
+        
+        # 依照比例隨機抽樣驗證集樣本
         val_path = random.sample(images, k=int(len(images) * val_rate))
 
         for img_path in images:
-            if img_path in val_path:  # 如果该路径在采样的验证集样本中则存入验证集
+            # 如果該路徑在採樣的驗證集樣本中則存入驗證集
+            if img_path in val_path:
                 val_images_path.append(img_path)
                 val_images_label.append(image_class)
-            else:  # 否则存入训练集
+            # 否則存入訓練集
+            else:
                 train_images_path.append(img_path)
                 train_images_label.append(image_class)
 
@@ -68,19 +76,22 @@ def read_split_data(root: str, val_rate: float = 0.2):
     assert len(val_images_path) > 0, "number of validation images must greater than 0."
 
     plot_image = False
+
     if plot_image:
-        # 绘制每种类别个数柱状图
+        # 繪製每個類別的樣本數柱狀圖
         plt.bar(range(len(flower_class)), every_class_num, align="center")
-        # 将横坐标0,1,2,3,4替换为相应的类别名称
+        # 將橫坐標 0, 1, 2, 3, 4 替換為相應的類別名稱
         plt.xticks(range(len(flower_class)), flower_class)
-        # 在柱状图上添加数值标签
+
+        # 在柱狀圖上添加數值標籤
         for i, v in enumerate(every_class_num):
             plt.text(x=i, y=v + 5, s=str(v), ha="center")
-        # 设置x坐标
+        
+        # 設置 x 坐標
         plt.xlabel("image class")
-        # 设置y坐标
+        # 設置 y 坐標
         plt.ylabel("number of images")
-        # 设置柱状图的标题
+        # 設置柱狀圖的標題
         plt.title("flower class distribution")
         plt.show()
 
@@ -101,13 +112,13 @@ def plot_data_loader_image(data_loader):
         for i in range(plot_num):
             # [C, H, W] -> [H, W, C]
             img = images[i].numpy().transpose(1, 2, 0)
-            # 反Normalize操作
+            # 反 Normalize 操作
             img = (img * [0.229, 0.224, 0.225] + [0.485, 0.456, 0.406]) * 255
             label = labels[i].item()
             plt.subplot(1, plot_num, i + 1)
             plt.xlabel(class_indices[str(label)])
-            plt.xticks([])  # 去掉x轴的刻度
-            plt.yticks([])  # 去掉y轴的刻度
+            plt.xticks([])  # 去除 x 軸刻度
+            plt.yticks([])  # 去除 y 軸刻度
             plt.imshow(img.astype("uint8"))
         plt.show()
 
@@ -126,8 +137,8 @@ def read_pickle(file_name: str) -> list:
 def train_one_epoch(model, optimizer, data_loader, device, epoch):
     model.train()
     loss_function = torch.nn.CrossEntropyLoss()
-    accu_loss = torch.zeros(1).to(device)  # 累计损失
-    accu_num = torch.zeros(1).to(device)  # 累计预测正确的样本数
+    accu_num = torch.zeros(1).to(device)  # 累計預測正確的樣本數
+    accu_loss = torch.zeros(1).to(device)  # 累計損失
     optimizer.zero_grad()
 
     sample_num = 0
@@ -164,8 +175,8 @@ def evaluate(model, data_loader, device, epoch):
 
     model.eval()
 
-    accu_num = torch.zeros(1).to(device)  # 累计预测正确的样本数
-    accu_loss = torch.zeros(1).to(device)  # 累计损失
+    accu_num = torch.zeros(1).to(device)  # 累計預測正確的樣本數
+    accu_loss = torch.zeros(1).to(device)  # 累計損失
 
     sample_num = 0
     data_loader = tqdm(data_loader, file=sys.stdout)
