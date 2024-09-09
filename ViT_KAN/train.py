@@ -57,7 +57,7 @@ def main(args):
     )
 
     batch_size = args.batch_size
-    
+
     nw = min(
         [os.cpu_count(), batch_size if batch_size > 1 else 0, 8]
     )  # DataLoader使用的進程數
@@ -114,7 +114,7 @@ def main(args):
 
     pg = [p for p in model.parameters() if p.requires_grad]
     optimizer = optim.SGD(pg, lr=args.lr, momentum=0.9, weight_decay=5e-5)
-    
+
     # Scheduler 優化來自論文
     # Bag of Tricks for Image Classification with Convolutional Neural Networks (2018)
     lf = (

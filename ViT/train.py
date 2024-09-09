@@ -57,7 +57,7 @@ def main(args):
     )
 
     batch_size = args.batch_size
-    
+
     nw = min(
         [os.cpu_count(), batch_size if batch_size > 1 else 0, 8]
     )  # DataLoader使用的進程數
@@ -114,7 +114,7 @@ def main(args):
 
     pg = [p for p in model.parameters() if p.requires_grad]
     optimizer = optim.SGD(pg, lr=args.lr, momentum=0.9, weight_decay=5e-5)
-    
+
     # Scheduler 優化來自論文
     # Bag of Tricks for Image Classification with Convolutional Neural Networks (2018)
     lf = (
@@ -153,10 +153,10 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--num_classes", type=int, default=5)
-    parser.add_argument("--epochs", type=int, default=30)
-    parser.add_argument("--batch-size", type=int, default=32)
-    parser.add_argument("--lr", type=float, default=0.1)
-    parser.add_argument("--lrf", type=float, default=0.25)
+    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--lr", type=float, default=0.001)
+    parser.add_argument("--lrf", type=float, default=0.01)
 
     # 資料集根目錄
     parser.add_argument("--data-path", type=str, default="data/flower_photos")

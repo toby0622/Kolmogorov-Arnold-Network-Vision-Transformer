@@ -35,7 +35,7 @@ def read_split_data(root: str, val_rate: float = 0.2):
     val_images_label = []  # 儲存驗證集圖片對應索引
     every_class_num = []  # 儲存每個類別的樣本數
     supported = [".jpg", ".JPG", ".png", ".PNG"]  # 支持的圖片格式
-    
+
     # 遍歷每個 Folder 的 File
     for cla in flower_class:
         cla_path = os.path.join(root, cla)
@@ -55,7 +55,7 @@ def read_split_data(root: str, val_rate: float = 0.2):
 
         # 紀錄該類別的樣本數
         every_class_num.append(len(images))
-        
+
         # 依照比例隨機抽樣驗證集樣本
         val_path = random.sample(images, k=int(len(images) * val_rate))
 
@@ -86,7 +86,7 @@ def read_split_data(root: str, val_rate: float = 0.2):
         # 在柱狀圖上添加數值標籤
         for i, v in enumerate(every_class_num):
             plt.text(x=i, y=v + 5, s=str(v), ha="center")
-        
+
         # 設置 x 坐標
         plt.xlabel("image class")
         # 設置 y 坐標
