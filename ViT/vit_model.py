@@ -19,7 +19,7 @@ def drop_path(x, drop_prob: float = 0.0, training: bool = False):
     return output
 
 
-# Drop paths (Stochastic Depth) per sample (when applied in main path of residual blocks)
+# 每個樣本的 drop path (隨機深度，應用於殘差塊的主路徑時)
 class DropPath(nn.Module):
     def __init__(self, drop_prob=None):
         super(DropPath, self).__init__()
@@ -29,7 +29,7 @@ class DropPath(nn.Module):
         return drop_path(x, self.drop_prob, self.training)
 
 
-# 2D Image to Patch Embedding
+# 2D 影像 Patch Embedding
 class PatchEmbed(nn.Module):
     def __init__(
         self, img_size=224, patch_size=16, in_c=3, embed_dim=768, norm_layer=None

@@ -19,45 +19,50 @@ def main():
         ]
     )
 
-    # load image
+    # 加載圖片
     img_path = "../tulip.jpg"
-    assert os.path.exists(img_path), "file: '{}' dose not exist.".format(img_path)
+    assert os.path.exists(img_path), "文件: '{}' 不存在.".format(img_path)
     img = Image.open(img_path)
     plt.imshow(img)
+
     # [N, C, H, W]
     img = data_transform(img)
-    # expand batch dimension
+
+    # 擴展批次維度
     img = torch.unsqueeze(img, dim=0)
 
-    # read class_indict
+    # 讀取 class_indict
     json_path = "./class_indices.json"
-    assert os.path.exists(json_path), "file: '{}' dose not exist.".format(json_path)
+    assert os.path.exists(json_path), "文件: '{}' 不存在.".format(json_path)
 
     with open(json_path, "r") as f:
         class_indict = json.load(f)
 
-    # create model
+    # 創建模型
     model = create_model(num_classes=5, has_logits=False).to(device)
-    # load model weights
+
+    # 加載模型權重
     model_weight_path = "./weights/model-9.pth"
     model.load_state_dict(torch.load(model_weight_path, map_location=device))
     model.eval()
+
     with torch.no_grad():
-        # predict class
+        # 預測類別
         output = torch.squeeze(model(img.to(device))).cpu()
         predict = torch.softmax(output, dim=0)
         predict_cla = torch.argmax(predict).numpy()
 
-    print_res = "class: {}   prob: {:.3}".format(
+    print_res = "類別: {}   機率: {:.3}".format(
         class_indict[str(predict_cla)], predict[predict_cla].numpy()
     )
+
     plt.title(print_res)
+
     for i in range(len(predict)):
         print(
-            "class: {:10}   prob: {:.3}".format(
-                class_indict[str(i)], predict[i].numpy()
-            )
+            "類別: {:10}   機率: {:.3}".format(class_indict[str(i)], predict[i].numpy())
         )
+
     plt.show()
 
 
