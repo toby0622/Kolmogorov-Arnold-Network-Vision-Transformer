@@ -4,6 +4,45 @@ from functools import partial
 from collections import OrderedDict
 
 
+class ChebyKANLayer(nn.Module):
+    def __init__(self, input_dim, output_dim, degree):
+        super(ChebyKANLayer, self).__init__()
+        self.inputdim = input_dim
+        self.outdim = output_dim
+        self.degree = degree
+
+        self.cheby_coeffs = nn.Parameter(torch.empty(input_dim, output_dim, degree + 1))
+        nn.init.normal_(self.cheby_coeffs, mean=0.0, std=1 / (input_dim * (degree + 1)))
+        self.register_buffer("arange", torch.arange(0, degree + 1, 1))
+
+    def forward(self, x):
+        # x 形狀: (batch_size, seq_len, inputdim)
+        batch_size, seq_len, _ = x.shape
+
+        # 將 x 展平以便與切比雪夫多項式一起使用: (batch_size * seq_len, inputdim)
+        x = x.view(-1, self.inputdim)
+
+        # 使用 tanh 將輸入歸一化到 [-1, 1]
+        x = torch.tanh(x)
+
+        # 重新塑形並重複輸入 degree + 1 次
+        x = x.view((-1, self.inputdim, 1)).expand(-1, -1, self.degree + 1)
+
+        # 應用 acos 並乘以 arange [0 .. degree]
+        x = x.acos() * self.arange
+
+        # 應用 cos 以獲取切比雪夫多項式值
+        x = x.cos()
+
+        # 計算切比雪夫插值
+        y = torch.einsum("bid,iod->bo", x, self.cheby_coeffs)
+
+        # 重新塑形回原始序列格式
+        y = y.view(batch_size, seq_len, self.outdim)
+
+        return y
+
+
 def drop_path(x, drop_prob: float = 0.0, training: bool = False):
     if drop_prob == 0.0 or not training:
         return x
@@ -153,6 +192,7 @@ class Block(nn.Module):
         drop_path_ratio=0.0,
         act_layer=nn.GELU,
         norm_layer=nn.LayerNorm,
+        degree=3,  # 添加 degree 作為 ChebyKAN 的參數
     ):
         super(Block, self).__init__()
         self.norm1 = norm_layer(dim)
@@ -164,22 +204,23 @@ class Block(nn.Module):
             attn_drop_ratio=attn_drop_ratio,
             proj_drop_ratio=drop_ratio,
         )
-        # 注意：隨機深度的丟棄路徑，我們將看看這是否比 dropout 更好
         self.drop_path = (
             DropPath(drop_path_ratio) if drop_path_ratio > 0.0 else nn.Identity()
         )
         self.norm2 = norm_layer(dim)
         mlp_hidden_dim = int(dim * mlp_ratio)
-        self.mlp = Mlp(
-            in_features=dim,
-            hidden_features=mlp_hidden_dim,
-            act_layer=act_layer,
-            drop=drop_ratio,
+
+        # 使用兩層 ChebyKANLayer 模擬 MLP 結構
+        self.chebykan1 = ChebyKANLayer(
+            input_dim=dim, output_dim=mlp_hidden_dim, degree=degree
+        )
+        self.chebykan2 = ChebyKANLayer(
+            input_dim=mlp_hidden_dim, output_dim=dim, degree=degree
         )
 
     def forward(self, x):
         x = x + self.drop_path(self.attn(self.norm1(x)))
-        x = x + self.drop_path(self.mlp(self.norm2(x)))
+        x = x + self.drop_path(self.chebykan2(self.chebykan1(self.norm2(x))))
         return x
 
 
