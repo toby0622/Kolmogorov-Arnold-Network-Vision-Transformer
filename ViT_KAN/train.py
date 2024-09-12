@@ -4,12 +4,18 @@ import argparse
 import torch
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
+import time
+import torchprofile
+import warnings
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from my_dataset import MyDataSet
 from vit_model import vit_base_patch16_224_in21k as create_model
 from utils import read_split_data, train_one_epoch, evaluate
+from torchsummary import summary
 
+# 忽略特定警告
+warnings.filterwarnings("ignore", message="No handlers found: ")
 
 def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
@@ -62,7 +68,7 @@ def main(args):
         [os.cpu_count(), batch_size if batch_size > 1 else 0, 8]
     )  # DataLoader使用的進程數
 
-    print("Using {} dataloader workers every process".format(nw))
+    print("Using {} Dataloader Workers Every Process".format(nw))
 
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
@@ -110,7 +116,7 @@ def main(args):
             if "head" not in name and "pre_logits" not in name:
                 para.requires_grad_(False)
             else:
-                print("training {}".format(name))
+                print("Training {}".format(name))
 
     pg = [p for p in model.parameters() if p.requires_grad]
     optimizer = optim.SGD(pg, lr=args.lr, momentum=0.9, weight_decay=5e-5)
@@ -149,8 +155,16 @@ def main(args):
 
         torch.save(model.state_dict(), "./weights/model-{}.pth".format(epoch))
 
+    # 訓練完成後評估模型參數和 FLOPs
+    print("Model Parameters & FLOPs Evaluation")
+    summary(model, (3, 224, 224))
+    flops = torchprofile.profile_macs(model, torch.randn(1, 3, 224, 224).to(device))
+    print(f"Total FLOPs: {flops / 1e9} GFLOPs")
+
 
 if __name__ == "__main__":
+    start_time = time.time()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--num_classes", type=int, default=5)
     parser.add_argument("--epochs", type=int, default=10)
@@ -179,3 +193,7 @@ if __name__ == "__main__":
     opt = parser.parse_args()
 
     main(opt)
+
+    end_time = time.time()
+
+    print("Training Time: {:.2f} (Minutes)".format((end_time - start_time) / 60))
