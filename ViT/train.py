@@ -10,7 +10,7 @@ import warnings
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from my_dataset import MyDataSet
-from vit_model import vit_base_patch16_224_in21k as create_model
+from vit_model import vit_huge_patch14_224_in21k as create_model
 from utils import read_split_data, train_one_epoch, evaluate
 from torchsummary import summary
 
@@ -88,7 +88,7 @@ def main(args):
         collate_fn=val_dataset.collate_fn,
     )
 
-    model = create_model(num_classes=args.num_classes, has_logits=False).to(device)
+    model = create_model(num_classes=args.num_classes).to(device)
 
     if args.weights != "":
         assert os.path.exists(args.weights), "weights file: '{}' not exist.".format(
