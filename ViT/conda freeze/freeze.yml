@@ -257,7 +257,6 @@ dependencies:
   - importlib_resources=6.4.4=pyhd8ed1ab_0
   - inequality=1.0.1=pyhd8ed1ab_0
   - iniconfig=2.0.0=pyhd8ed1ab_0
-  - intel-openmp=2024.2.1=h57928b3_1083
   - ipyevents=2.0.2=pyhd8ed1ab_0
   - ipyfilechooser=0.6.0=pyhd8ed1ab_0
   - ipygany=0.5.0=pyhd8ed1ab_0
@@ -455,7 +454,6 @@ dependencies:
   - mgwr=2.2.1=pyhd8ed1ab_0
   - minizip=4.0.6=hb638d1e_0
   - mistune=3.0.2=pyhd8ed1ab_0
-  - mkl=2021.4.0=h0e2418a_729
   - mkl-devel=2021.4.0=h57928b3_730
   - mkl-include=2021.4.0=h0e2418a_729
   - momepy=0.8.0=pyhd8ed1ab_0
@@ -681,7 +679,6 @@ dependencies:
   - svt-av1=2.2.1=he0c23c2_0
   - sympy=1.13.2=pyh04b8f61_3
   - tabulate=0.9.0=pyhd8ed1ab_1
-  - tbb=2021.13.0=hc790b64_0
   - tbb-devel=2021.13.0=h053bfa6_0
   - tblib=3.0.0=pyhd8ed1ab_0
   - tenacity=9.0.0=pyhd8ed1ab_0
@@ -778,8 +775,14 @@ dependencies:
   - zstandard=0.23.0=py310he5e10e1_1
   - zstd=1.5.6=h0ea2cb4_0
   - pip:
+      - intel-openmp==2021.4.0
       - lidar==0.8.3
+      - mkl==2021.4.0
+      - tbb==2021.13.1
+      - thop==0.1.1-2209072238
       - torch-tb-profiler==0.4.3
       - torchaudio==2.3.1
+      - torchprofile==0.0.4
+      - torchsummary==1.5.1
       - torchvision==0.18.1
 prefix: C:\Anaconda\envs\ViT
