@@ -17,6 +17,7 @@ from torchsummary import summary
 # 忽略特定警告
 warnings.filterwarnings("ignore", message="No handlers found: ")
 
+
 def main(args):
     device = torch.device(args.device if torch.cuda.is_available() else "cpu")
 
