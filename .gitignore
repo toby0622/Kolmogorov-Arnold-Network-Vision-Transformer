@@ -166,3 +166,7 @@ ViT/data
 ViT/weights
 ViT_KAN/data
 ViT_KAN/weights
+Dataset_Exchange/CIFAR10_Batch
+Dataset_Exchange/CIFAR100_Batch
+Dataset_Exchange/CIFAR10
+Dataset_Exchange/CIFAR100
