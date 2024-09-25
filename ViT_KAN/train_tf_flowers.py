@@ -10,7 +10,7 @@ import warnings
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import transforms
 from my_dataset import MyDataSet
-from vit_model import vit_huge_patch14_224_in21k as create_model
+from vit_model import vit_base_patch16_224 as create_model
 from utils import read_split_data, train_one_epoch, evaluate
 from torchsummary import summary
 
