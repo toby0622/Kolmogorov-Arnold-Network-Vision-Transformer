@@ -32,7 +32,7 @@ for z in range(10):
 # 生成訓練集圖片，如果需要其他格式如 PNG，請更改圖片後綴名
 for j in range(1, 6):
     dataName = (
-        "C:/Users/toby0/Documents/GitHub/Kolmogorov-Arnold-Network-Vision-Transformer/Dataset_Exchange/CIFAR10_Batch/data_batch_"
+        "C:/Users/TOBY/Documents/GitHub/Kolmogorov-Arnold-Network-Vision-Transformer/Dataset_Exchange/CIFAR10_Batch/data_batch_"
         + str(j)
     )
 
