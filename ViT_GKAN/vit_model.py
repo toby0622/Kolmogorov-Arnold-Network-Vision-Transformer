@@ -29,15 +29,21 @@ class GaussianKANLayer(nn.Module):
     def forward(self, x):
         """
         前向傳播：
-        1. 將輸入 x 正規化到 [-1, 1]（根據需要，可以調整或移除此步驟）。
+        1. 將輸入 x 正規化到 [-1, 1]。
         2. 計算高斯基底函數。
         3. 將基底函數與係數相乘並求和，生成輸出。
         """
-        # 將輸入正規化到 [-1, 1]，根據需要可以調整
+        # x 形狀: (batch_size, seq_len, inputdim)
+        batch_size, seq_len, _ = x.shape
+
+        # 將 x 展平為 (batch_size * seq_len, inputdim)
+        x = x.view(-1, self.inputdim)
+
+        # 使用 tanh 將輸入歸一化到 [-1, 1]
         x = torch.tanh(x)
 
-        # 將 x 重塑為 (batch_size, inputdim, 1) 以便與 mu 和 sigma 進行廣播運算
-        x = x.view(-1, self.inputdim, 1)  # shape: (batch_size, inputdim, 1)
+        # 將 x 重塑為 (batch_size * seq_len, inputdim, 1) 以便與 mu 和 sigma 進行廣播運算
+        x = x.view(-1, self.inputdim, 1)  # shape: (batch_size * seq_len, inputdim, 1)
 
         # 計算 sigma，確保其為正數
         sigma = torch.exp(self.log_sigma) + 1e-8  # 防止除以零
@@ -45,17 +51,17 @@ class GaussianKANLayer(nn.Module):
         # 計算高斯基底函數：exp(-((x - mu)/sigma)^2)
         gaussians = torch.exp(
             -(((x - self.mu) / sigma) ** 2)
-        )  # shape: (batch_size, inputdim, num_gaussians)
+        )  # shape: (batch_size * seq_len, inputdim, num_gaussians)
 
         # 計算線性組合：對每個輸出維度進行加權求和
         # coeffs 的形狀為 (inputdim, output_dim, num_gaussians)
         # 使用愛因斯坦求和約定進行批量矩陣乘法
         y = torch.einsum(
             "bid,iod->bo", gaussians, self.coeffs
-        )  # shape: (batch_size, outdim)
+        )  # shape: (batch_size * seq_len, outdim)
 
-        # 重新塑形回原始序列格式
-        y = y.view(-1, self.outdim)
+        # 重新塑形回原始序列格式 (batch_size, seq_len, outdim)
+        y = y.view(batch_size, seq_len, self.outdim)
 
         return y
 
